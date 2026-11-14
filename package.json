@@ -1,0 +1,13 @@
+{
+  "name": "sigp-sistema-policial",
+  "version": "1.0.0",
+  "description": "SIGP - sistema interno de gestao policial para RP (login, efetivo, ocorrencias, pontos, chat, auditoria e backup)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}
