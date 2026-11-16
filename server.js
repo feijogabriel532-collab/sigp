@@ -863,7 +863,10 @@ function totalAdvertencias(userId) {
 // manda a advertência para o canal do Discord (não trava o sistema se o Discord falhar)
 // O cartão é montado aqui; o bot só repassa o embed pronto para o canal.
 const ADV_BARRA = { leve: '▰▱▱', media: '▰▰▱', grave: '▰▰▰' };
-const ADV_RODAPE = 'POLÍCIA FEDERAL · Registro disciplinar interno';
+function rodapeAviso() {
+  const nome = textoAviso((db.config && db.config.nomeSistema) || 'Sistema', 60);
+  return nome + ' · Registro disciplinar interno';
+}
 
 function advHoraCurta(v) {
   const d = new Date(v || Date.now());
@@ -876,9 +879,10 @@ function cartaoAdvertencia(adv, o) {
   const total = totalAdvertencias(adv.userId);
 
   const efetivo = '**' + textoAviso(adv.nome, 60) + '**'
-    + (adv.login ? '\n`@' + textoAviso(adv.login, 40) + '`' : '')
-    + (adv.cargo ? '\n' + textoAviso(adv.cargo, 40) : '');
+    + (adv.login ? '\n`@' + textoAviso(adv.login, 40) + '`' : '');
+  const cargo = textoAviso(adv.cargo, 40);
   const gravidade = g.emoji + ' **' + g.rotulo + '**\n' + (ADV_BARRA[adv.gravidade] || ADV_BARRA.leve);
+  const quemAplicou = textoAviso(adv.aplicadaPor, 60) + (adv.aplicadaPorLogin ? '\n`@' + textoAviso(adv.aplicadaPorLogin, 40) + '`' : '');
 
   if (o.removida) {
     return {
@@ -887,14 +891,14 @@ function cartaoAdvertencia(adv, o) {
       description: '> ' + textoAviso(adv.motivo, 380),
       fields: [
         { name: '👤 Efetivo', value: efetivo, inline: true },
+        { name: '🎖️ Patente', value: cargo, inline: true },
         { name: '⚖️ Gravidade', value: gravidade, inline: true },
-        { name: '📊 Advertências agora', value: '**' + total + '**', inline: true },
         { name: '📝 Justificativa da retirada', value: textoAviso(o.justificativa, 900), inline: false },
+        { name: '📊 Advertências agora', value: '**' + total + '**', inline: true },
         { name: '🛡️ Retirada por', value: textoAviso(o.removidaPor, 60) + (o.removidaPorLogin ? '\n`@' + textoAviso(o.removidaPorLogin, 40) + '`' : ''), inline: true },
-        { name: '🕒 Aplicada em', value: advHoraCurta(adv.em), inline: true },
         { name: '🕒 Retirada em', value: advHoraCurta(o.removidaEm || Date.now()), inline: true },
       ],
-      footer: { text: ADV_RODAPE },
+      footer: { text: rodapeAviso() + ' · aplicada em ' + advHoraCurta(adv.em) },
       timestamp: new Date(o.removidaEm || Date.now()).toISOString(),
     };
   }
@@ -905,12 +909,13 @@ function cartaoAdvertencia(adv, o) {
     description: '> ' + textoAviso(adv.motivo, 380),
     fields: [
       { name: '👤 Efetivo', value: efetivo, inline: true },
+      { name: '🎖️ Patente', value: cargo, inline: true },
       { name: '⚖️ Gravidade', value: gravidade, inline: true },
       { name: '📊 Advertências acumuladas', value: '**' + total + '**', inline: true },
-      { name: '🛡️ Aplicada por', value: textoAviso(adv.aplicadaPor, 60) + (adv.aplicadaPorLogin ? '\n`@' + textoAviso(adv.aplicadaPorLogin, 40) + '`' : ''), inline: true },
+      { name: '🛡️ Aplicada por', value: quemAplicou, inline: true },
       { name: '🕒 Registro', value: advHoraCurta(adv.em), inline: true },
     ],
-    footer: { text: ADV_RODAPE },
+    footer: { text: rodapeAviso() },
     timestamp: new Date(adv.em || Date.now()).toISOString(),
   };
 }
